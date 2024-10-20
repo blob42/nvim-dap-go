@@ -80,7 +80,7 @@ local function setup_delve_adapter(dap, config)
     },
   }
 
-  dap.adapters.go = function(callback, client_config)
+  dap.adapters.delve = function(callback, client_config)
     if client_config.port == nil then
       callback(delve_config)
       return
@@ -102,14 +102,14 @@ end
 local function setup_go_configuration(dap, configs)
   local common_debug_configs = {
     {
-      type = "go",
+      type = "delve",
       name = "Debug",
       request = "launch",
       program = "${file}",
       buildFlags = configs.delve.build_flags,
     },
     {
-      type = "go",
+      type = "delve",
       name = "Debug (Arguments)",
       request = "launch",
       program = "${file}",
@@ -117,7 +117,7 @@ local function setup_go_configuration(dap, configs)
       buildFlags = configs.delve.build_flags,
     },
     {
-      type = "go",
+      type = "delve",
       name = "Debug (Arguments & Build Flags)",
       request = "launch",
       program = "${file}",
@@ -125,14 +125,14 @@ local function setup_go_configuration(dap, configs)
       buildFlags = get_build_flags,
     },
     {
-      type = "go",
+      type = "delve",
       name = "Debug Package",
       request = "launch",
       program = "${fileDirname}",
       buildFlags = configs.delve.build_flags,
     },
     {
-      type = "go",
+      type = "delve",
       name = "Attach",
       mode = "local",
       request = "attach",
@@ -140,7 +140,7 @@ local function setup_go_configuration(dap, configs)
       buildFlags = configs.delve.build_flags,
     },
     {
-      type = "go",
+      type = "delve",
       name = "Debug test",
       request = "launch",
       mode = "test",
@@ -148,7 +148,7 @@ local function setup_go_configuration(dap, configs)
       buildFlags = configs.delve.build_flags,
     },
     {
-      type = "go",
+      type = "delve",
       name = "Debug test (go.mod)",
       request = "launch",
       mode = "test",
@@ -190,7 +190,7 @@ local function debug_test(testname, testpath, build_flags, extra_args)
   local dap = load_module("dap")
 
   local config = {
-    type = "go",
+    type = "delve",
     name = testname,
     request = "launch",
     mode = "test",
