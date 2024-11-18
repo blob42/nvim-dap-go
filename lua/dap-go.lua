@@ -66,21 +66,20 @@ local function setup_delve_adapter(dap, config)
   local args = { "dap", "-l", "127.0.0.1:" .. config.delve.port }
   vim.list_extend(args, config.delve.args)
 
-  local delve_config = {
-    type = "server",
-    port = config.delve.port,
-    executable = {
-      command = config.delve.path,
-      args = args,
-      detached = config.delve.detached,
-      cwd = config.delve.cwd,
-    },
-    options = {
-      initialize_timeout_sec = config.delve.initialize_timeout_sec,
-    },
-  }
-
   dap.adapters.delve = function(callback, client_config)
+    local delve_config = {
+      type = "server",
+      port = config.delve.port,
+      executable = {
+        command = config.delve.path,
+        args = args,
+        detached = config.delve.detached,
+        cwd = config.delve.cwd,
+      },
+      options = {
+        initialize_timeout_sec = config.delve.initialize_timeout_sec,
+      },
+    }
     if client_config.port == nil then
       callback(delve_config)
       return
@@ -93,7 +92,13 @@ local function setup_delve_adapter(dap, config)
 
     local listener_addr = host .. ":" .. client_config.port
     delve_config.port = client_config.port
-    delve_config.executable.args = { "dap", "-l", listener_addr }
+    if client_config.request == "attach" and client_config.mode == "remote" then
+      -- if we want to attach to an existing debugger only we have to remove the executable section
+      -- otherwise nvim-dap will try to start a new debugger at the same port and fails (since port is already bound)
+      delve_config.executable = nil
+    else
+      delve_config.executable.args = { "dap", "-l", listener_addr }
+    end
 
     callback(delve_config)
   end
@@ -170,7 +175,7 @@ local function setup_go_configuration(dap, configs)
   end
 
   for _, config in ipairs(configs.dap_configurations) do
-    if config.type == "go" then
+    if config.type == "delve" then
       table.insert(dap.configurations.go, config)
     end
   end
